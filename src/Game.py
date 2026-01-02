@@ -24,9 +24,10 @@ class Game:
         self.camera.follow(self.player.move_controller)
 
 
-    def update(self, dt):
+    def update(self, dt, mouse_pos):
         keys = pygame.key.get_pressed()
-        self.player.update(dt, keys)
+        mouse = pygame.mouse
+        self.player.update(dt, keys, mouse, mouse_pos)
         self.camera.update()
 
     def draw(self, screen):

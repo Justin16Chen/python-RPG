@@ -1,7 +1,7 @@
 import math
 from enum import Enum
 
-from src.utils.mathUtils import lerp
+from src.utils.MathUtils import lerp
 
 
 class TaskType(Enum):
@@ -179,8 +179,8 @@ class Tween:
     def __init__(
         self,
         parent, attr, start_value, end_value, time,
-        call_function_name=None,
-        call_function_args = None,
+        func_name=None,
+        func_args = None,
         tween_type="linear",
         delay=0,
         loop=False, ping_pong=False,
@@ -196,8 +196,8 @@ class Tween:
         self.end_value = end_value
         self.time = time
         self.attribute = attr
-        self.call_function_name = call_function_name
-        self.call_function_args = call_function_args
+        self.call_function_name = func_name
+        self.call_function_args = func_args
         self.tween_type = tween_type
         self.loop = loop
         self.ping_pong = ping_pong
@@ -214,11 +214,11 @@ class Tween:
                 self,
                 self.name + " delay timer",
                 time=delay,
-                set_attr_name="delay_timer",
-                set_attr_to=None,
+                attr_name="delay_timer",
+                attr_val=None,
             )
 
-        self.type = TaskType.SET if call_function_name is None else TaskType.SET_AND_CALL
+        self.type = TaskType.SET if func_name is None else TaskType.SET_AND_CALL
 
         setattr(parent, self.attribute, self.start_value)
 
@@ -315,10 +315,10 @@ class Timer:
         parent,
         name,
         time,
-        set_attr_name=None,
-        set_attr_to=None,
-        call_function_name=None,
-        args=None,
+        attr_name=None,
+        attr_val=None,
+        func_name=None,
+        func_args=None,
     ):
         Timer.timer_list.append(self)
         self.parent = parent
@@ -331,23 +331,23 @@ class Timer:
 
         # find type of timer - set, call, set_and_call
         self.type = None
-        if set_attr_name is not None:
-            if call_function_name is not None:
+        if attr_name is not None:
+            if func_name is not None:
                 self.type = TaskType.SET_AND_CALL
             else:
                 self.type = TaskType.SET
-        elif call_function_name is not None:
+        elif func_name is not None:
             self.type = TaskType.CALL
 
         # set a variable
         if self.should_set:
-            self.attribute = set_attr_name
-            self.setTo = set_attr_to
+            self.attribute = attr_name
+            self.setTo = attr_val
 
         # call a function
         if self.should_call:
-            self.funcName = call_function_name
-            self.args = args
+            self.funcName = func_name
+            self.args = func_args
 
     @property
     def should_set(self):
