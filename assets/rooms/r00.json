@@ -1,5 +1,5 @@
 {
-  "tile size": 25,
+  "tile size": 100,
   "player spawn": [ 5, 3 ],
   "data": [
     [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],

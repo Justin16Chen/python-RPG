@@ -1,8 +1,8 @@
 import pygame
 
-from src.entity.player.Player import Player
-from src.world.Camera import Camera
-from src.world.World import World
+from src.entity.player.player import Player
+from src.world.camera import Camera
+from src.world.world import World
 
 
 class Game:
@@ -30,6 +30,6 @@ class Game:
         self.player.update(dt, keys, mouse, mouse_pos)
         self.camera.update()
 
-    def draw(self, screen):
-        self.world.draw(screen, self.camera)
-        self.player.draw(screen)
+    def draw(self, renderer):
+        self.world.draw(renderer, self.camera)
+        self.player.draw(renderer)

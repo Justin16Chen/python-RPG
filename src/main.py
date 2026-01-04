@@ -1,0 +1,55 @@
+import pygame
+import sys
+from src.game import Game
+from src.utils.drawing import rendering, resizing
+from src.utils.easyTween import Tween, Timer
+
+
+pygame.init()
+
+WIDTH, HEIGHT = 640, 360
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+
+pygame.display.set_caption("python RPG")
+
+clock = pygame.time.Clock()
+FPS = 60
+
+game = Game(WIDTH, HEIGHT)
+renderer = rendering.Renderer()
+
+
+running = True
+while running:
+    dt = clock.tick(FPS) / 1000.
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.VIDEORESIZE:
+            width, height = event.size
+            width = max(WIDTH, width)
+            height = max(HEIGHT, height)
+            screen = pygame.display.set_mode((width, height), pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
+
+    draw_scale, x_draw_offset, y_draw_offset = resizing.calculate_draw_info(WIDTH, HEIGHT)
+    renderer.draw_scale = draw_scale
+
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    mouse_x /= draw_scale
+    mouse_y /= draw_scale
+
+    Tween.update_tweens(dt)
+    Timer.update_timers(dt)
+    game.update(dt, (mouse_x, mouse_y))
+
+    screen.fill((50, 50, 50))
+    renderer.begin()
+    game.draw(renderer)
+
+    renderer.flush(screen, x_draw_offset, y_draw_offset)
+    resizing.draw_black_bars(screen, x_draw_offset, y_draw_offset)
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()

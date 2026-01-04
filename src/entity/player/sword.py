@@ -4,7 +4,8 @@ import pygame
 
 from enum import Enum
 
-from src.utils import EasyTween
+from src.utils import easyTween
+from src.utils.drawing import rendering
 
 
 class SwordState(Enum):
@@ -30,7 +31,7 @@ class Sword(pygame.sprite.Sprite):
     def swing(self):
         if self.state == SwordState.AIM:
             self.state = SwordState.SWING
-            self.swing_tween = EasyTween.Tween(self, "dir", self.dir, -self.dir, self.swing_time)
+            self.swing_tween = easyTween.Tween(self, "dir", self.dir, -self.dir, self.swing_time)
 
     def update(self, dt, target_pos):
         screen_pos = self.game.camera.to_screen((self.parent.centerx, self.parent.centery))
@@ -43,7 +44,7 @@ class Sword(pygame.sprite.Sprite):
                     self.swing_tween = None
                     self.state = SwordState.AIM
 
-    def draw(self, screen):
+    def draw(self, renderer):
         offset_angle = self.target_angle - 90 * self.dir
         swing_angle = self.target_angle - 180 * self.dir
 
@@ -57,4 +58,4 @@ class Sword(pygame.sprite.Sprite):
         screenx += math.cos(math.radians(swing_angle)) * self.image.get_width() * 0.5
         screeny -= math.sin(math.radians(swing_angle)) * self.image.get_width() * 0.5
 
-        screen.blit(rotated, (screenx, screeny))
+        renderer.submit(rendering.DrawCmd(20, "smooth", rotated, (screenx, screeny)))

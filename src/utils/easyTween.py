@@ -1,7 +1,7 @@
 import math
 from enum import Enum
 
-from src.utils.MathUtils import lerp
+from src.utils.mathUtils import lerp
 
 
 class TaskType(Enum):

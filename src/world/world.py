@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pygame
 
+from src.utils.drawing import rendering
+
 
 class World:
     def __init__(self, game):
@@ -47,7 +49,7 @@ class World:
     def clamp_grid_pos(self, grid_pos):
         return max(0, min(grid_pos[0], len(self.tile_data[0]))), max(0, min(grid_pos[1], len(self.tile_data)))
 
-    def draw(self, screen, camera):
+    def draw(self, renderer, camera):
         ts = self.tile_size
         min_grid_x, min_grid_y = self.clamp_grid_pos(self.world_pos_to_grid((camera.x, camera.y)))
         max_grid_x, max_grid_y = self.clamp_grid_pos(self.world_pos_to_grid((camera.x + camera.screen_w + ts, camera.y + camera.screen_h + ts)))
@@ -59,5 +61,4 @@ class World:
                 draw_x = x * ts - camera.x
                 draw_y = y * ts - camera.y
 
-                # draw code down here
-                screen.blit(self.tile_surfaces[tile], (draw_x, draw_y))
+                renderer.submit(rendering.DrawCmd(0, "pixel", self.tile_surfaces[tile], (draw_x, draw_y), anchor="topleft"))
