@@ -48,9 +48,7 @@ class Sword(pygame.sprite.Sprite):
         offset_angle = self.target_angle - 90 * self.dir
         swing_angle = self.target_angle - 180 * self.dir
 
-        rotated = pygame.transform.rotate(self.image, swing_angle)
-        rotated_rect = rotated.get_rect()
-        screenx, screeny = self.game.camera.to_screen((self.parent.centerx - rotated_rect.w * 0.5, self.parent.centery - rotated_rect.h * 0.5))
+        screenx, screeny = self.game.camera.to_screen((self.parent.centerx, self.parent.centery))
 
         screenx += math.cos(math.radians(offset_angle)) * self.sword_offset
         screeny -= math.sin(math.radians(offset_angle)) *  self.sword_offset
@@ -58,4 +56,4 @@ class Sword(pygame.sprite.Sprite):
         screenx += math.cos(math.radians(swing_angle)) * self.image.get_width() * 0.5
         screeny -= math.sin(math.radians(swing_angle)) * self.image.get_width() * 0.5
 
-        renderer.submit(rendering.DrawCmd(20, "smooth", rotated, (screenx, screeny)))
+        renderer.submit(rendering.DrawCmd(20, "smooth", self.image, (screenx, screeny), angle_deg=swing_angle))

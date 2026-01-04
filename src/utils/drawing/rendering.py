@@ -76,7 +76,7 @@ class Renderer:
                 scaled_base = pg.transform.scale(base, (int(w * self.draw_scale * c.scale), int(h * self.draw_scale * c.scale)))
 
                 # 2) rotate WITHOUT additional scaling (keeps it from getting blurrier)
-                img = pg.transform.rotate(scaled_base, -c.angle_deg)
+                img = pg.transform.rotate(scaled_base, c.angle_deg)
 
                 r = self._rect_for_anchor(img, c.anchor, sx, sy)
                 r.x += x_draw_offset
