@@ -1,13 +1,14 @@
 import pygame
 import sys
 from src.game import Game
+from src.utils import particles
 from src.utils.drawing import rendering, resizing
 from src.utils.easyTween import Tween, Timer
 
 
 pygame.init()
 
-WIDTH, HEIGHT = 640, 360
+WIDTH, HEIGHT = 320, 180
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
 pygame.display.set_caption("python RPG")
@@ -41,10 +42,12 @@ while running:
 
     Tween.update_tweens(dt)
     Timer.update_timers(dt)
+    particles.update_particles(dt)
     game.update(dt, (mouse_x, mouse_y))
 
     screen.fill((50, 50, 50))
     renderer.begin()
+    particles.draw_particles(renderer, game.camera)
     game.draw(renderer)
 
     renderer.flush(screen, x_draw_offset, y_draw_offset)

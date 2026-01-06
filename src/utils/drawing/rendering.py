@@ -7,16 +7,18 @@ class DrawCmd:
     z: int
     kind: str   # "pixel" or "smooth"
     image: pg.Surface
-    draw_pos: tuple[int, int]
+    draw_pos: tuple[float, float]
     anchor: str = "center"
     angle_deg: float = 0.0
     scale: float = 1.0
+    alpha: int = 255
+    force_refresh: bool = False
 
 class Renderer:
     def __init__(self: int):
         self.draw_scale = 1 # scale from virtual game pixel screen to actual display screen
         self.queue = []
-        self._pixel_scale_cache: Dict[Tuple[int,int], pg.Surface] = {}
+        self._pixel_scale_cache: Dict[Tuple[int,str,float,str,int], pg.Surface] = {}
         self._pad_cache = {}
 
     def begin(self):
@@ -25,22 +27,22 @@ class Renderer:
     def submit(self, cmd: DrawCmd):
         self.queue.append(cmd)
 
-    def _get_scaled_pixel_sprite(self, img: pg.Surface) -> pg.Surface:
-        key = (id(img), self.draw_scale)
+    def _get_scaled_pixel_sprite(self, c: DrawCmd) -> pg.Surface:
+        key = (id(c.image), c.anchor, c.scale, c.kind, self.draw_scale)
         cached = self._pixel_scale_cache.get(key)
-        if cached is None:
-            w, h = img.get_size()
-            cached = pg.transform.scale(img, (w * self.draw_scale, h * self.draw_scale)).convert_alpha()
+        if cached is None or c.force_refresh:
+            w, h = c.image.get_size()
+            cached = pg.transform.scale(c.image, (w * self.draw_scale, h * self.draw_scale)).convert_alpha()
             self._pixel_scale_cache[key] = cached
         return cached
 
-    def _get_padded(self, img: pg.Surface, pad: int = 2) -> pg.Surface:
-        key = (id(img), pad)
+    def _get_padded(self, c: DrawCmd, pad: int = 2) -> pg.Surface:
+        key = (id(c.image), pad)
         cached = self._pad_cache.get(key)
-        if cached is None:
-            w, h = img.get_size()
+        if cached is None or c.force_refresh:
+            w, h = c.image.get_size()
             padded = pg.Surface((w + pad * 2, h + pad * 2), pg.SRCALPHA)
-            padded.blit(img, (pad, pad))
+            padded.blit(c.image, (pad, pad))
             cached = padded.convert_alpha()
             self._pad_cache[key] = cached
         return cached
@@ -58,7 +60,9 @@ class Renderer:
                 sx = int(c.draw_pos[0]) * self.draw_scale
                 sy = int(c.draw_pos[1]) * self.draw_scale
 
-                img = self._get_scaled_pixel_sprite(c.image)
+                img = self._get_scaled_pixel_sprite(c)
+                img = pg.transform.rotate(img, -c.angle_deg)
+                img.set_alpha(c.alpha)
                 r = self._rect_for_anchor(img, c.anchor, sx, sy)
                 r.x += x_draw_offset
                 r.y += y_draw_offset
@@ -68,7 +72,8 @@ class Renderer:
                 sx = c.draw_pos[0] * self.draw_scale
                 sy = c.draw_pos[1] * self.draw_scale
 
-                base = self._get_padded(c.image, pad=2)
+                base = self._get_padded(c, pad=2)
+                base.set_alpha(c.alpha)
 
                 # 1) scale up with NEAREST (keeps sprite crisp before rotation)
                 w, h = base.get_size()

@@ -32,7 +32,7 @@ class Tween:
                 setattr(tween.parent, tween.attribute, tween.value)
 
             # delete finished tweens and update loop index to not skip any tweens
-            if tween._done:
+            if tween.done:
                 if tween.should_call:
                     if tween.call_function_args is None:
                         getattr(tween.parent, tween.call_function_name)()
@@ -166,9 +166,9 @@ class Tween:
     # returns if a tween is done or not
     @staticmethod
     def tween_done(tween):
-        if tween._loop:
+        if tween.loop:
             return False
-        if tween._ping_pong:
+        if tween.ping_pong:
             return tween.stage == "back" and tween.percent <= 0
         return tween.percent >= 1
 
@@ -212,7 +212,6 @@ class Tween:
         if delay != 0:
             self.delay_timer = Timer(
                 self,
-                self.name + " delay timer",
                 time=delay,
                 attr_name="delay_timer",
                 attr_val=None,
@@ -313,19 +312,19 @@ class Timer:
     def __init__(
         self,
         parent,
-        name,
         time,
         attr_name=None,
         attr_val=None,
         func_name=None,
         func_args=None,
+        name="timer"
     ):
         Timer.timer_list.append(self)
         self.parent = parent
         self.name = name
         self.cur_time = 0
         if time <= 0:
-            raise ValueError(f"time of {time} must be positive for {name} Timer")
+            raise ValueError(f"time of {time} must be positive for Timer")
         self.time = time
         self.destroy = False
 

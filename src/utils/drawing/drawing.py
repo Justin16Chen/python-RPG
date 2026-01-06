@@ -1,6 +1,13 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 import pygame
+
+def load_asset(sub_path):
+    root = Path(__file__).resolve().parents[3]
+    path = root / "assets" / sub_path
+    return pygame.image.load(path).convert_alpha()
+
 
 @dataclass
 class AnimInfo:
@@ -120,10 +127,6 @@ class AnimationManager:
             )
 
         self.cur_anim_name = anim_info[0].name
-
-        keys = list(self.animations)
-        for name in keys:
-            print(self.animations[name])
 
     @property
     def cur_anim(self):

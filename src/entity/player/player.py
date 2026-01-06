@@ -19,18 +19,17 @@ class Player(pygame.sprite.Sprite):
         self.move_controller.x = 200
         self.move_controller.y = 200
 
-        root = Path(__file__).resolve().parents[3]
-        path = root / "assets" / "images" / "entities" / "player animation.png"
         anim_info = [
             drawing.AnimInfo("idle", 1, 12),
             drawing.AnimInfo("jump", 1, 12),
             drawing.AnimInfo("run", 3, 12, loop=True, ping_pong=True)
         ]
-        spritesheet = drawing.SpriteSheet(pygame.image.load(path).convert_alpha(), 16, 16)
+        image = drawing.load_asset("images/entities/player animation.png")
+        spritesheet = drawing.SpriteSheet(image, 16, 16)
         self.anim_manager = drawing.AnimationManager(spritesheet, anim_info)
 
         self.sword = Sword(game, self.move_controller.hitbox)
-        self.sword.sword_offset = 12
+        self.sword.sword_offset = 4
 
     def update(self, dt, keys, mouse, mouse_pos):
 

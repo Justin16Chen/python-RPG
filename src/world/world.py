@@ -13,7 +13,6 @@ class World:
     def load_room(self, room_x, room_y):
         root = Path(__file__).resolve().parents[2]
         path = root / "assets" / "rooms" / f"r{room_x}{room_y}.json"
-        print(path)
         with open(path, "r") as file:
             self.level_data = json.load(file)
 
