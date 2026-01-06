@@ -40,7 +40,7 @@ class Sword(pygame.sprite.Sprite):
             case SwordState.AIM:
                 pass
             case SwordState.SWING:
-                if self.swing_tween.done:
+                if self.swing_tween._done:
                     self.swing_tween = None
                     self.state = SwordState.AIM
 

@@ -1,4 +1,3 @@
-import pygame
 import pygame as pg
 from dataclasses import dataclass
 from typing import Dict, Tuple
