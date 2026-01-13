@@ -1,7 +1,7 @@
 import pygame
 import sys
 from src.game import Game
-from src.utils import particles
+from src.utils import particles, inputs
 from src.utils.drawing import rendering, resizing
 from src.utils.easyTween import Tween, Timer
 
@@ -16,6 +16,7 @@ pygame.display.set_caption("python RPG")
 clock = pygame.time.Clock()
 FPS = 60
 
+mouse = inputs.Mouse(pygame.mouse)
 game = Game(WIDTH, HEIGHT)
 renderer = rendering.Renderer()
 
@@ -36,16 +37,14 @@ while running:
     draw_scale, x_draw_offset, y_draw_offset = resizing.calculate_draw_info(WIDTH, HEIGHT)
     renderer.draw_scale = draw_scale
 
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-    mouse_x /= draw_scale
-    mouse_y /= draw_scale
+    mouse.update(draw_scale)
 
     Tween.update_tweens(dt)
     Timer.update_timers(dt)
     particles.update_particles(dt)
-    game.update(dt, (mouse_x, mouse_y))
+    game.update(dt, mouse)
 
-    screen.fill((50, 50, 50))
+    screen.fill((129, 153, 54))
     renderer.begin()
     particles.draw_particles(renderer, game.camera)
     game.draw(renderer)

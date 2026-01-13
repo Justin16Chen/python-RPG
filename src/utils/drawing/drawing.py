@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-
+import json
 import pygame
 
-def load_asset(sub_path):
+def load_image_asset(sub_path):
     root = Path(__file__).resolve().parents[3]
     path = root / "assets" / sub_path
     return pygame.image.load(path).convert_alpha()
@@ -17,29 +17,102 @@ class AnimInfo:
     loop: bool = False
     ping_pong: bool = False
 
-class SpriteSheet:
-    def __init__(self, spritesheet, frame_w, frame_h):
-        self.spritesheet = spritesheet.convert_alpha()
+class Spritesheet:
+    def __init__(self, image, frame_w, frame_h):
+        self.spritesheet_img = image.convert_alpha()
         self.frame_w = frame_w
         self.frame_h = frame_h
         self._frame_cache = {}  # (col,row) -> Surface
 
-    def get_frame(self, col, row, flip_x, flip_y):
+    def get_frame(self, col, row, flip_x=False, flip_y=False):
         key = (col, row, flip_x, flip_y)
         if key in self._frame_cache:
             return self._frame_cache[key]
 
         rect = pygame.Rect(col * self.frame_w, row * self.frame_h, self.frame_w, self.frame_h)
         frame = pygame.Surface((self.frame_w, self.frame_h), pygame.SRCALPHA)
-        frame.blit(self.spritesheet, (0, 0), rect)
+        frame.blit(self.spritesheet_img, (0, 0), rect)
         if flip_x or flip_y:
             frame = pygame.transform.flip(frame, flip_x, flip_y)
 
         self._frame_cache[key] = frame
         return frame
 
+@dataclass
+class RuleInfo:
+    grid: list[list[int]]
+    spritesheet_pos: tuple[int, int]
+
+def load_rule_asset(sub_path: str):
+    root = Path(__file__).resolve().parents[3]
+    path = root / "assets" / sub_path
+    with open(path, "r") as f:
+        data = json.load(f)
+
+    rules = [
+        RuleInfo(grid=rule["grid"], spritesheet_pos=rule["spritesheet_pos"])
+        for rule in data["rules"]
+    ]
+    return rules
+
+class Tilemap:
+    def __init__(self, spritesheet: Spritesheet, rules: list[RuleInfo]):
+        self.spritesheet = spritesheet
+        self.rules = rules
+
+    def get_grid_surface(self, grid, tile_size, default_border_value=1):
+        surface = pygame.Surface((len(grid[0]) * tile_size, len(grid) * tile_size))
+
+        for y in range(len(grid)):
+            for x in range(len(grid[0])):
+                pos = self._get_spritesheet_pos(grid, x, y, default_border_value)
+                if pos is not None:
+                    tile_surf = self.spritesheet.get_frame(pos[0], pos[1])
+                    scaled_tile_surf = pygame.transform.scale(tile_surf, (tile_size, tile_size))
+                    surface.blit(scaled_tile_surf, (x * tile_size, y * tile_size))
+        return surface
+
+    def _get_spritesheet_pos(self, grid, col, row, default_border_value):
+        H, W = len(grid), len(grid[0])
+
+        adjacent_tiles = []
+        for dy in (-1, 0, 1):
+            yy = row + dy
+            row_list = []
+            for dx in (-1, 0, 1):
+                xx = col + dx
+                if 0 <= yy < H and 0 <= xx < W:
+                    row_list.append(grid[yy][xx])
+                else:
+                    row_list.append(-1)
+            adjacent_tiles.append(row_list)
+
+        for rule in self.rules:
+            valid = True
+            for y in range(3):
+                for x in range(3):
+                    rule_num = rule.grid[y][x]
+                    tile_num = adjacent_tiles[y][x]
+
+                    if rule_num == -1:  # wildcard in rule
+                        continue
+                    if tile_num == -1:  # out of bounds -> default border
+                        tile_num = default_border_value
+
+                    if rule_num != tile_num:
+                        valid = False
+                        break
+                if not valid:
+                    break
+
+            if valid:
+                return rule.spritesheet_pos
+
+        return None
+
+
 class SpriteSheetAnimation:
-    def __init__(self, name, spritesheet: SpriteSheet, row, frames, fps=12, loop=False, ping_pong=False):
+    def __init__(self, name, spritesheet: Spritesheet, row, frames, fps=12, loop=False, ping_pong=False):
         self.name = name
         self._spritesheet = spritesheet
         self._row = row
@@ -109,9 +182,8 @@ class SpriteSheetAnimation:
     def image(self):
         return self._spritesheet.get_frame(self._frame_index, self._row, self.flip_x, self.flip_y)
 
-
 class AnimationManager:
-    def __init__(self, spritesheet: SpriteSheet, anim_info: list[AnimInfo]):
+    def __init__(self, spritesheet: Spritesheet, anim_info: list[AnimInfo]):
         self.spritesheet = spritesheet
         self.animations = {}
         for i in range(len(anim_info)):

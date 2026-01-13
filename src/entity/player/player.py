@@ -8,39 +8,38 @@ from src.utils.controllers.movementController import MovementController
 from src.utils.drawing import rendering, drawing
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, game):
-        super().__init__()
+class Player:
+    def __init__(self, game, spawn_pos):
         self.game = game
 
         self.move_controller = MovementController()
         self.move_controller.set_kinematics(100, 200, 0.7)
         self.move_controller.set_hitbox(20, 20)
-        self.move_controller.x = 200
-        self.move_controller.y = 200
+        self.move_controller.x = spawn_pos[0]
+        self.move_controller.y = spawn_pos[1]
 
         anim_info = [
             drawing.AnimInfo("idle", 1, 12),
             drawing.AnimInfo("jump", 1, 12),
             drawing.AnimInfo("run", 3, 12, loop=True, ping_pong=True)
         ]
-        image = drawing.load_asset("images/entities/player animation.png")
-        spritesheet = drawing.SpriteSheet(image, 16, 16)
+        image = drawing.load_image_asset("images/entities/player animation.png")
+        spritesheet = drawing.Spritesheet(image, 16, 16)
         self.anim_manager = drawing.AnimationManager(spritesheet, anim_info)
 
         self.sword = Sword(game, self.move_controller.hitbox)
         self.sword.sword_offset = 4
 
-    def update(self, dt, keys, mouse, mouse_pos):
+    def update(self, dt, keys, mouse):
 
         # update movement
         x_dir, y_dir = inputController.get_input_dir(keys)
         self.move_controller.update_position(dt, pygame.math.Vector2(x_dir, y_dir))
 
         # update sword
-        if mouse.get_pressed()[0]:
+        if mouse.lb_first:
             self.sword.swing()
-        self.sword.update(dt, mouse_pos)
+        self.sword.update(dt, (mouse.x, mouse.y))
 
         # update animations
         if x_dir == 0 and y_dir == 0:

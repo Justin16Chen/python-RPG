@@ -21,7 +21,7 @@ class Sword(pygame.sprite.Sprite):
         self.swing_time = 0.1
         self.target_angle = 0
         self.dir = 1
-        self.image = drawing.load_asset("images/weapons/sword.png")
+        self.image = drawing.load_image_asset("images/weapons/sword.png")
         self.image = pygame.transform.rotate(self.image, -90)
         self.sword_offset = 0
 
